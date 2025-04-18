@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong - Reaction</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      background: black;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 { font-size: 2rem; text-transform: uppercase; margin-bottom: 20px; }
+
+    #pongCanvas {
+      background: black;
+      display: block;
+      margin: 0 auto;
+      touch-action: none; /* Disable touch actions for better control */
+    }
+
+    .info {
+      font-size: 1.2rem;
+      margin: 5px 0;
+    }
+
+    #score {
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Pong</h1>
+  <p class="info">Punteggio: <span id="score">0 - 0</span></p>
+  <canvas id="pongCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('pongCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const paddleWidth = 10, paddleHeight = 100, ballSize = 10;
+    let leftPaddleY, rightPaddleY, ballX, ballY, ballSpeedX, ballSpeedY;
+    let leftPaddleSpeed = 0, rightPaddleSpeed = 0;
+    let leftScore = 0, rightScore = 0;
+
+    // Set canvas size dynamically based on the screen size
+    const canvasWidth = window.innerWidth * 0.9;
+    const canvasHeight = window.innerHeight * 0.6;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    // Initial positions and ball speed
+    resetGame();
+
+    function drawRect(x, y, width, height, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, width, height);
+    }
+
+    function drawBall(x, y, size, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x - size / 2, y - size / 2, size, size);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw paddles
+      drawRect(0, leftPaddleY, paddleWidth, paddleHeight, 'white'); // Left paddle
+      drawRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight, 'white'); // Right paddle
+
+      // Draw ball
+      drawBall(ballX, ballY, ballSize, 'white');
+
+      // Ball movement
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+
+      // Collision with top and bottom
+      if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
+
+      // Collision with paddles
+      if (ballX <= paddleWidth && ballY >= leftPaddleY && ballY <= leftPaddleY + paddleHeight) {
+        ballSpeedX = -ballSpeedX;
+      } else if (ballX >= canvas.width - paddleWidth && ballY >= rightPaddleY && ballY <= rightPaddleY + paddleHeight) {
+        ballSpeedX = -ballSpeedX;
+      }
+
+      // Ball out of bounds
+      if (ballX <= 0) {
+        rightScore++;
+        resetBall();
+      } else if (ballX >= canvas.width) {
+        leftScore++;
+        resetBall();
+      }
+
+      // Update score
+      document.getElementById('score').textContent = `${leftScore} - ${rightScore}`;
+
+      // Move paddles
+      leftPaddleY += leftPaddleSpeed;
+      rightPaddleY += rightPaddleSpeed;
+
+      // Prevent paddles from going out of bounds
+      if (leftPaddleY < 0) leftPaddleY = 0;
+      if (leftPaddleY + paddleHeight > canvas.height) leftPaddleY = canvas.height - paddleHeight;
+
+      if (rightPaddleY < 0) rightPaddleY = 0;
+      if (rightPaddleY + paddleHeight > canvas.height) rightPaddleY = canvas.height - paddleHeight;
+    }
+
+    function resetBall() {
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      ballSpeedX = (Math.random() < 0.5 ? -1 : 1) * 5;
+      ballSpeedY = (Math.random() < 0.5 ? -1 : 1) * 5;
+    }
+
+    function update() {
+      draw();
+    }
+
+    // Handle touch controls for left paddle
+    canvas.addEventListener('touchmove', (e) => {
+      const touchY = e.touches[0].clientY;
+      leftPaddleY = touchY - paddleHeight / 2; // Update the left paddle position based on touch
+      if (leftPaddleY < 0) leftPaddleY = 0;
+      if (leftPaddleY + paddleHeight > canvas.height) leftPaddleY = canvas.height - paddleHeight;
+    });
+
+    // AI for right paddle (basic)
+    function ai() {
+      const paddleCenter = rightPaddleY + paddleHeight / 2;
+      if (ballY > paddleCenter + 35) {
+        rightPaddleSpeed = 4;
+      } else if (ballY < paddleCenter - 35) {
+        rightPaddleSpeed = -4;
+      } else {
+        rightPaddleSpeed = 0;
+      }
+    }
+
+    // Game loop
+    function gameLoop() {
+      ai();
+      update();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop(); // Start the game
+
+    // Function to reset the game
+    function resetGame() {
+      leftPaddleY = canvas.height / 2 - paddleHeight / 2;
+      rightPaddleY = canvas.height / 2 - paddleHeight / 2;
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      ballSpeedX = (Math.random() < 0.5 ? -1 : 1) * 5;
+      ballSpeedY = (Math.random() < 0.5 ? -1 : 1) * 5;
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfabeto Interattivo</title>
+    <style>
+        /* Stili generali */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s ease, color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Modalità chiara - Beige rilassante */
+        body.light-mode {
+            background: linear-gradient(to right, #F5E6CA, #EAD7BB);
+            color: #5A4636;
+        }
+
+        /* Modalità scura */
+        body.dark-mode {
+            background: linear-gradient(to right, #141E30, #243B55);
+            color: #fff;
+        }
+
+        /* Pulsante modalità scura */
+        .toggle-button {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #A67B5B;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            z-index: 10;
+        }
+
+        .toggle-button:hover {
+            background: #8C5E44;
+        }
+
+        /* Modalità scura per pulsante */
+        body.dark-mode .toggle-button {
+            background: #fff;
+            color: #222;
+        }
+
+        /* Contenitore principale */
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: rgba(255, 235, 205, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; 
+        }
+
+        /* Modalità scura per il container */
+        body.dark-mode .container {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Titolo */
+        h1 {
+            font-size: 28px;
+            margin: 10px 0 20px;
+            text-align: center;
+        }
+
+        /* Griglia lettere */
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* Bottone lettera */
+        .letter-button {
+            background: #D4A373;
+            border: none;
+            padding: 15px 10px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.2s ease;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: relative;
+        }
+
+        .letter-button:hover {
+            background: #C08457;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .letter-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Modalità scura per i bottoni */
+        body.dark-mode .letter-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        /* Stili per le diverse forme delle lettere */
+        .letter-style {
+            margin: 2px 0;
+            line-height: 1.2;
+        }
+
+        .print-upper {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        .print-lower {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        .cursive-upper {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 22px;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .cursive-lower {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 20px;
+            font-weight: normal;
+            font-style: italic;
+        }
+
+        /* Pulsante per cambiare stile */
+        .style-toggle {
+            margin-top: 20px;
+            background: #A67B5B;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .style-toggle:hover {
+            background: #8C5E44;
+        }
+
+        /* Modalità scura per il pulsante di stile */
+        body.dark-mode .style-toggle {
+            background: #fff;
+            color: #222;
+        }
+
+        /* Adattamento mobile */
+        @media (max-width: 600px) {
+            .letter-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .letter-button {
+                padding: 10px 5px;
+            }
+            
+            .print-upper {
+                font-size: 20px;
+            }
+            
+            .print-lower, .cursive-upper, .cursive-lower {
+                font-size: 16px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="light-mode">
+
+    <button class="toggle-button" onclick="toggleDarkMode()">🌙 Modalità Scura</button>
+
+    <div class="container">
+        <h1>📖 Alfabeto Interattivo</h1>
+        <div class="letter-grid" id="letter-container">
+            <!-- Lettere generate dinamicamente -->
+        </div>
+        <button class="style-toggle" onclick="toggleLetterStyle()">Cambia Stile Visualizzazione</button>
+    </div>
+
+    <script>
+        // Lista lettere dell'alfabeto italiano con suoni
+        const lettere = [
+            { lettera: "A", suono: "https://www.soundjay.com/buttons/sounds/button-09.mp3" },
+            { lettera: "B", suono: "https://www.soundjay.com/buttons/sounds/button-10.mp3" },
+            { lettera: "C", suono: "https://www.soundjay.com/buttons/sounds/button-11.mp3" },
+            { lettera: "D", suono: "https://www.soundjay.com/buttons/sounds/button-12.mp3" },
+            { lettera: "E", suono: "https://www.soundjay.com/buttons/sounds/button-13.mp3" },
+            { lettera: "F", suono: "https://www.soundjay.com/buttons/sounds/button-14.mp3" },
+            { lettera: "G", suono: "https://www.soundjay.com/buttons/sounds/button-15.mp3" },
+            { lettera: "H", suono: "https://www.soundjay.com/buttons/sounds/button-16.mp3" },
+            { lettera: "I", suono: "https://www.soundjay.com/buttons/sounds/button-17.mp3" },
+            { lettera: "J", suono: "https://www.soundjay.com/buttons/sounds/button-18.mp3" },
+            { lettera: "K", suono: "https://www.soundjay.com/buttons/sounds/button-19.mp3" },
+            { lettera: "L", suono: "https://www.soundjay.com/buttons/sounds/button-20.mp3" },
+            { lettera: "M", suono: "https://www.soundjay.com/buttons/sounds/button-21.mp3" },
+            { lettera: "N", suono: "https://www.soundjay.com/buttons/sounds/button-22.mp3" },
+            { lettera: "O", suono: "https://www.soundjay.com/buttons/sounds/button-23.mp3" },
+            { lettera: "P", suono: "https://www.soundjay.com/buttons/sounds/button-24.mp3" },
+            { lettera: "Q", suono: "https://www.soundjay.com/buttons/sounds/button-25.mp3" },
+            { lettera: "R", suono: "https://www.soundjay.com/buttons/sounds/button-26.mp3" },
+            { lettera: "S", suono: "https://www.soundjay.com/buttons/sounds/button-27.mp3" },
+            { lettera: "T", suono: "https://www.soundjay.com/buttons/sounds/button-28.mp3" },
+            { lettera: "U", suono: "https://www.soundjay.com/buttons/sounds/button-29.mp3" },
+            { lettera: "V", suono: "https://www.soundjay.com/buttons/sounds/button-30.mp3" },
+            { lettera: "Z", suono: "https://www.soundjay.com/buttons/sounds/button-31.mp3" }
+        ];
+
+        const letterContainer = document.getElementById("letter-container");
+        let showAllStyles = false;
+
+        // Genera i bottoni dinamicamente
+        function generateLetterButtons() {
+            letterContainer.innerHTML = "";
+            
+            lettere.forEach(({ lettera, suono }) => {
+                const button = document.createElement("button");
+                button.classList.add("letter-button");
+                
+                if (showAllStyles) {
+                    button.innerHTML = `
+                        <div class="letter-style print-upper">${lettera}</div>
+                        <div class="letter-style print-lower">${lettera.toLowerCase()}</div>
+                        <div class="letter-style cursive-upper">${lettera}</div>
+                        <div class="letter-style cursive-lower">${lettera.toLowerCase()}</div>
+                    `;
+                } else {
+                    button.innerHTML = `
+                        <div class="letter-style print-upper">${lettera}</div>
+                        <div class="letter-style print-lower">${lettera.toLowerCase()}</div>
+                    `;
+                }
+                
+                // Aggiungi l'evento per riprodurre il suono
+                button.addEventListener("click", () => {
+                    const audio = new Audio(suono);
+                    audio.play();
+                    
+                    // Effetto visivo al click
+                    button.style.transform = "scale(0.95)";
+                    setTimeout(() => {
+                        button.style.transform = "scale(1)";
+                    }, 100);
+                });
+                
+                letterContainer.appendChild(button);
+            });
+        }
+
+        // Funzione per cambiare lo stile di visualizzazione
+        function toggleLetterStyle() {
+            showAllStyles = !showAllStyles;
+            generateLetterButtons();
+            document.querySelector(".style-toggle").textContent = 
+                showAllStyles ? "Mostra Solo Stile Stampato" : "Mostra Tutti Gli Stili";
+        }
+
+        // Funzione per la modalità scura
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            const button = document.querySelector(".toggle-button");
+            button.textContent = document.body.classList.contains("dark-mode") ? "☀️ Modalità Chiara" : "🌙 Modalità Scura";
+            localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+        }
+
+        // Inizializzazione
+        function init() {
+            // Mantiene la scelta dell'utente per la modalità scura
+            if (localStorage.getItem("darkMode") === "true") {
+                document.body.classList.add("dark-mode");
+                document.querySelector(".toggle-button").textContent = "☀️ Modalità Chiara";
+            }
+            
+            generateLetterButtons();
+        }
+
+        init();
+    </script>
+
+</body>
+</html>

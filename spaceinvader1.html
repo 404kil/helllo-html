@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Invaders</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      background: black;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 { font-size: 2rem; text-transform: uppercase; margin-bottom: 10px; }
+    
+    #gameCanvas {
+      background: black;
+      display: block;
+      border: 3px solid white;
+    }
+
+    #score {
+      font-size: 1.5rem;
+      margin: 5px 0;
+    }
+
+    /* Pulsanti di controllo */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .btn {
+      background: black;
+      color: white;
+      border: 2px solid white;
+      padding: 15px;
+      font-size: 1.5rem;
+      width: 33%;
+      text-align: center;
+    }
+
+    .btn:active {
+      background: white;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Space Invaders</h1>
+  <p id="score">Punteggio: 0</p>
+  <canvas id="gameCanvas" width="300" height="500"></canvas>
+
+  <!-- Controlli touch -->
+  <div class="controls">
+    <button class="btn" id="leftBtn">️⬅️<</button>
+    <button class="btn" id="shootBtn">🔺</button>
+    <button class="btn" id="rightBtn">➡️</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const playerWidth = 40, playerHeight = 10, bulletWidth = 4, bulletHeight = 10;
+    let playerX = canvas.width / 2 - playerWidth / 2;
+    let playerSpeed = 0;
+    let bullets = [];
+    let invaders = [];
+    let invaderSpeed = 1;
+    let invaderDrop = 10;
+    let score = 0;
+    let level = 1;
+    let invaderFireRate = 2000;
+
+    function drawRect(x, y, width, height, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, width, height);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Disegna il giocatore
+      drawRect(playerX, canvas.height - 20, playerWidth, playerHeight, 'white');
+
+      // Disegna proiettili
+      bullets.forEach((bullet, index) => {
+        bullet.y -= 4;
+        if (bullet.y < 0) bullets.splice(index, 1);
+        drawRect(bullet.x, bullet.y, bulletWidth, bulletHeight, 'white');
+      });
+
+      // Disegna invasori
+      invaders.forEach((invader, index) => {
+        invader.x += invaderSpeed;
+        if (invader.x + 20 >= canvas.width || invader.x <= 0) {
+          invaderSpeed = -invaderSpeed;
+          invaders.forEach(inv => inv.y += invaderDrop);
+        }
+        drawRect(invader.x, invader.y, 20, 10, 'white');
+
+        // Collisione con proiettili
+        bullets.forEach((bullet, bIndex) => {
+          if (
+            bullet.x < invader.x + 20 &&
+            bullet.x + bulletWidth > invader.x &&
+            bullet.y < invader.y + 10 &&
+            bullet.y + bulletHeight > invader.y
+          ) {
+            bullets.splice(bIndex, 1);
+            invaders.splice(index, 1);
+            score += 10;
+            document.getElementById('score').textContent = `Punteggio: ${score}`;
+          }
+        });
+      });
+
+      // Movimento giocatore
+      playerX += playerSpeed;
+      if (playerX < 0) playerX = 0;
+      if (playerX + playerWidth > canvas.width) playerX = canvas.width - playerWidth;
+
+      // Controllo se tutti gli invasori sono eliminati
+      if (invaders.length === 0) {
+        level++;
+        invaderSpeed += 0.5; // Aumenta la velocità
+        invaderFireRate -= 200; // Aumenta la frequenza di sparo
+        spawnInvaders();
+      }
+    }
+
+    function spawnInvaders() {
+      for (let i = 0; i < level + 3; i++) {
+        let x = (i % 5) * 50 + 10;
+        let y = Math.floor(i / 5) * 30 + 10;
+        invaders.push({ x, y });
+      }
+    }
+
+    function shoot() {
+      bullets.push({ x: playerX + playerWidth / 2 - bulletWidth / 2, y: canvas.height - 30 });
+    }
+
+    function invaderShoot() {
+      if (invaders.length > 0) {
+        let shooter = invaders[Math.floor(Math.random() * invaders.length)];
+        bullets.push({ x: shooter.x + 10, y: shooter.y + 10, enemy: true });
+      }
+    }
+
+    setInterval(invaderShoot, invaderFireRate);
+
+    // Controlli touch
+    document.getElementById('leftBtn').addEventListener('touchstart', () => { playerSpeed = -3; });
+    document.getElementById('leftBtn').addEventListener('touchend', () => { playerSpeed = 0; });
+    document.getElementById('rightBtn').addEventListener('touchstart', () => { playerSpeed = 3; });
+    document.getElementById('rightBtn').addEventListener('touchend', () => { playerSpeed = 0; });
+    document.getElementById('shootBtn').addEventListener('touchstart', shoot);
+
+    function gameLoop() {
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    spawnInvaders();
+    gameLoop();
+  </script>
+
+</body>
+</html>

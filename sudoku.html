@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sudoku</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f1f1f1;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(9, 40px);
+      grid-template-rows: repeat(9, 40px);
+      gap: 2px;
+      margin: 20px auto;
+      width: fit-content;
+      padding: 10px;
+      background-color: #222;
+      border-radius: 5px;
+    }
+
+    .cell {
+      width: 40px;
+      height: 40px;
+      text-align: center;
+      font-size: 18px;
+      border: 1px solid black;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .cell:focus {
+      outline: 2px solid blue;
+    }
+
+    .fixed {
+      background-color: #ddd;
+      font-weight: bold;
+      cursor: default;
+    }
+
+    .error {
+      background-color: #ff4d4d;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .message {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Sudoku</h1>
+  <div class="grid" id="sudokuGrid"></div>
+  <button onclick="checkSudoku()">Controlla soluzione</button>
+  <p class="message" id="message"></p>
+
+  <script>
+    const gridSize = 9;
+    const sudokuGrid = document.getElementById("sudokuGrid");
+    const messageElement = document.getElementById("message");
+
+    // Puzzle di esempio (0 indica celle vuote)
+    const puzzle = [
+      [5, 3, 0, 0, 7, 0, 0, 0, 0],
+      [6, 0, 0, 1, 9, 5, 0, 0, 0],
+      [0, 9, 8, 0, 0, 0, 0, 6, 0],
+      [8, 0, 0, 0, 6, 0, 0, 0, 3],
+      [4, 0, 0, 8, 0, 3, 0, 0, 1],
+      [7, 0, 0, 0, 2, 0, 0, 0, 6],
+      [0, 6, 0, 0, 0, 0, 2, 8, 0],
+      [0, 0, 0, 4, 1, 9, 0, 0, 5],
+      [0, 0, 0, 0, 8, 0, 0, 7, 9]
+    ];
+
+    // Crea la griglia di gioco
+    function createSudokuGrid() {
+      sudokuGrid.innerHTML = '';
+      for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+          const cell = document.createElement("input");
+          cell.type = "text";
+          cell.maxLength = 1;
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+          cell.classList.add("cell");
+
+          if (puzzle[row][col] !== 0) {
+            cell.value = puzzle[row][col];
+            cell.classList.add("fixed");
+            cell.readOnly = true;
+          } else {
+            cell.addEventListener("input", (e) => {
+              const value = e.target.value;
+              if (!/^[1-9]$/.test(value)) {
+                e.target.value = "";
+              }
+            });
+          }
+
+          sudokuGrid.appendChild(cell);
+        }
+      }
+    }
+
+    // Controlla se la soluzione è corretta
+    function checkSudoku() {
+      const cells = document.querySelectorAll(".cell");
+      let board = [];
+
+      // Costruisce la matrice con i numeri inseriti
+      for (let row = 0; row < gridSize; row++) {
+        board[row] = [];
+        for (let col = 0; col < gridSize; col++) {
+          const cellIndex = row * gridSize + col;
+          let value = cells[cellIndex].value;
+          board[row][col] = value ? parseInt(value) : 0;
+        }
+      }
+
+      // Controlla righe, colonne e blocchi 3x3
+      if (isValidSudoku(board)) {
+        messageElement.textContent = "Sudoku corretto! 🎉";
+        messageElement.style.color = "green";
+      } else {
+        messageElement.textContent = "Errore nel Sudoku! 🔴";
+        messageElement.style.color = "red";
+      }
+    }
+
+    // Funzione per controllare se il Sudoku è valido
+    function isValidSudoku(board) {
+      for (let i = 0; i < gridSize; i++) {
+        let rowSet = new Set();
+        let colSet = new Set();
+        let boxSet = new Set();
+
+        for (let j = 0; j < gridSize; j++) {
+          let rowVal = board[i][j];
+          let colVal = board[j][i];
+          let boxVal = board[3 * Math.floor(i / 3) + Math.floor(j / 3)][3 * (i % 3) + (j % 3)];
+
+          if (rowVal !== 0 && rowSet.has(rowVal)) return false;
+          if (colVal !== 0 && colSet.has(colVal)) return false;
+          if (boxVal !== 0 && boxSet.has(boxVal)) return false;
+
+          rowSet.add(rowVal);
+          colSet.add(colVal);
+          boxSet.add(boxVal);
+        }
+      }
+      return true;
+    }
+
+    // Inizializza la griglia
+    createSudokuGrid();
+  </script>
+
+</body>
+</html>

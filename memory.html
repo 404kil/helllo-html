@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Game</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #222;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .card {
+      width: 100px;
+      height: 100px;
+      background-color: #333;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 2rem;
+      color: transparent;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    .card.flipped {
+      background-color: #fff;
+      color: #222;
+    }
+    .card.matched {
+      background-color: #4caf50;
+    }
+    #score {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    #reset {
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+      border: 2px solid white;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    #reset:hover {
+      background-color: white;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+<!-- Barra superiore -->
+<div class="top-bar">
+  <a href="zix.html" class="icon">⋮⋮⋮</a>
+  <span class="game-title">Memory</span>
+</div>
+
+<style>
+  .top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: rgba(20, 20, 20, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    border-bottom: 2px solid white;
+  }
+
+  .icon {
+    font-size: 1.5rem;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 10px;
+    transition: 0.3s;
+  }
+
+  .icon:hover {
+    color: gray;
+  }
+
+  .game-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+</style>
+  <p id="score">Punteggio: 0</p>
+  <div class="game-board" id="gameBoard"></div>
+  <button id="reset">Ricomincia</button>
+
+  <script>
+    const gameBoard = document.getElementById('gameBoard');
+    const scoreDisplay = document.getElementById('score');
+    const resetButton = document.getElementById('reset');
+
+    const cardsArray = ['🍎', '🍌', '🍉', '🍓', '🍍', '🍒', '🍎', '🍌', '🍉', '🍓', '🍍', '🍒'];
+    let cards = [];
+    let flippedCards = [];
+    let matchedCards = [];
+    let score = 0;
+
+    // Shuffle function
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    // Create the game cards
+    function createBoard() {
+      gameBoard.innerHTML = '';
+      shuffle(cardsArray);
+      cards = cardsArray.map(symbol => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.symbol = symbol;
+        card.addEventListener('click', flipCard);
+        gameBoard.appendChild(card);
+        return card;
+      });
+    }
+
+    // Flip the card
+    function flipCard() {
+      if (flippedCards.length < 2 && !this.classList.contains('flipped') && !this.classList.contains('matched')) {
+        this.textContent = this.dataset.symbol;
+        this.classList.add('flipped');
+        flippedCards.push(this);
+
+        if (flippedCards.length === 2) {
+          setTimeout(checkMatch, 800);
+        }
+      }
+    }
+
+    // Check for a match
+    function checkMatch() {
+      if (flippedCards[0].dataset.symbol === flippedCards[1].dataset.symbol) {
+        flippedCards[0].classList.add('matched');
+        flippedCards[1].classList.add('matched');
+        score++;
+        scoreDisplay.textContent = `Punteggio: ${score}`;
+        matchedCards.push(...flippedCards);
+      } else {
+        flippedCards[0].classList.remove('flipped');
+        flippedCards[1].classList.remove('flipped');
+        flippedCards[0].textContent = '';
+        flippedCards[1].textContent = '';
+      }
+      flippedCards = [];
+
+      if (matchedCards.length === cards.length) {
+        alert('Hai vinto! Ricomincia a giocare!');
+      }
+    }
+
+    // Reset the game
+    resetButton.addEventListener('click', () => {
+      score = 0;
+      scoreDisplay.textContent = `Punteggio: ${score}`;
+      matchedCards = [];
+      createBoard();
+    });
+
+    // Initialize the game
+    createBoard();
+  </script>
+
+</body>
+</html>

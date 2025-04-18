@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong Mobile - Reaction</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      background: black;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 { font-size: 2rem; text-transform: uppercase; margin-bottom: 10px; }
+
+    #pongCanvas {
+      background: black;
+      display: block;
+      border: 3px solid white;
+    }
+
+    #score {
+      font-size: 1.5rem;
+      margin: 5px 0;
+    }
+
+    /* Pulsanti di controllo */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .btn {
+      background: black;
+      color: white;
+      border: 2px solid white;
+      padding: 15px;
+      font-size: 1.5rem;
+      width: 50%;
+      text-align: center;
+    }
+
+    .btn:active {
+      background: white;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Pong</h1>
+  <p id="score">0 - 0</p>
+  <canvas id="pongCanvas" width="300" height="500"></canvas>
+
+  <!-- Controlli touch -->
+  <div class="controls">
+    <button class="btn" id="leftBtn">⬅️</button>
+    <button class="btn" id="rightBtn">➡️</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('pongCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const paddleWidth = 60, paddleHeight = 10, ballSize = 10;
+    let playerX = canvas.width / 2 - paddleWidth / 2;
+    let botX = canvas.width / 2 - paddleWidth / 2;
+    let ballX = canvas.width / 2, ballY = canvas.height / 2;
+    let ballSpeedX = 3, ballSpeedY = 3;
+    let playerSpeed = 0;
+    let botSpeed = 3;
+    let playerScore = 0, botScore = 0;
+
+    function drawRect(x, y, width, height, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, width, height);
+    }
+
+    function drawBall(x, y, size, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Disegna paddles e palla
+      drawRect(playerX, canvas.height - 20, paddleWidth, paddleHeight, 'white');
+      drawRect(botX, 10, paddleWidth, paddleHeight, 'white');
+      drawBall(ballX, ballY, ballSize, 'white');
+
+      // Movimento palla
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+
+      // Collisioni con i lati
+      if (ballX <= 0 || ballX >= canvas.width) ballSpeedX = -ballSpeedX;
+
+      // Collisione con il giocatore
+      if (ballY + ballSize / 2 >= canvas.height - 20 &&
+          ballX >= playerX && ballX <= playerX + paddleWidth) {
+        ballSpeedY = -ballSpeedY;
+      }
+
+      // Collisione con il bot
+      if (ballY - ballSize / 2 <= 20 &&
+          ballX >= botX && ballX <= botX + paddleWidth) {
+        ballSpeedY = -ballSpeedY;
+      }
+
+      // Palla fuori dal campo
+      if (ballY > canvas.height) {
+        botScore++;
+        resetBall();
+      } else if (ballY < 0) {
+        playerScore++;
+        resetBall();
+      }
+
+      document.getElementById('score').textContent = `${playerScore} - ${botScore}`;
+
+      // Movimento giocatore
+      playerX += playerSpeed;
+
+      // Limiti del giocatore
+      if (playerX < 0) playerX = 0;
+      if (playerX + paddleWidth > canvas.width) playerX = canvas.width - paddleWidth;
+
+      // AI intelligente per il bot
+      if (ballSpeedY < 0) { 
+        if (botX + paddleWidth / 2 < ballX - 10) {
+          botX += botSpeed;
+        } else if (botX + paddleWidth / 2 > ballX + 10) {
+          botX -= botSpeed;
+        }
+      }
+
+      // Limiti del bot
+      if (botX < 0) botX = 0;
+      if (botX + paddleWidth > canvas.width) botX = canvas.width - paddleWidth;
+    }
+
+    function resetBall() {
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      ballSpeedY = -ballSpeedY;
+    }
+
+    // Touch controls
+    document.getElementById('leftBtn').addEventListener('touchstart', () => { playerSpeed = -4; });
+    document.getElementById('leftBtn').addEventListener('touchend', () => { playerSpeed = 0; });
+    document.getElementById('rightBtn').addEventListener('touchstart', () => { playerSpeed = 4; });
+    document.getElementById('rightBtn').addEventListener('touchend', () => { playerSpeed = 0; });
+
+    function gameLoop() {
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop(); // Avvia il gioco
+  </script>
+
+</body>
+</html>

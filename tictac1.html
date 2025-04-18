@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe vs Bot</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #222;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      cursor: pointer;
+      border: 2px solid white;
+    }
+    .cell:hover {
+      background-color: #444;
+    }
+    .winner {
+      color: #4caf50;
+    }
+    #reset {
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+      border: 2px solid white;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    #reset:hover {
+      background-color: white;
+      color: #333;
+    }
+    #status {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tic Tac Toe vs Bot</h1>
+  <p id="status">Turno del giocatore X</p>
+  <div class="board" id="board"></div>
+  <button id="reset">Ricomincia</button>
+
+  <script>
+    const board = document.getElementById('board');
+    const status = document.getElementById('status');
+    const resetButton = document.getElementById('reset');
+    let currentPlayer = 'X';  // 'X' è il giocatore, 'O' è il bot
+    let gameBoard = ['', '', '', '', '', '', '', '', ''];
+    let gameActive = true;
+
+    // Funzione per creare la griglia del gioco
+    function createBoard() {
+      board.innerHTML = '';
+      gameBoard.forEach((cell, index) => {
+        const div = document.createElement('div');
+        div.classList.add('cell');
+        div.setAttribute('data-index', index);
+        div.textContent = cell;
+        div.addEventListener('click', handleCellClick);
+        board.appendChild(div);
+      });
+    }
+
+    // Gestione del click sulla cella
+    function handleCellClick(event) {
+      const index = event.target.getAttribute('data-index');
+      
+      // Non fare nulla se la cella è già occupata o se il gioco è finito
+      if (gameBoard[index] !== '' || !gameActive || currentPlayer === 'O') return;
+
+      // Aggiorna la cella e il board
+      gameBoard[index] = currentPlayer;
+      event.target.textContent = currentPlayer;
+
+      // Verifica se c'è un vincitore
+      if (checkWinner()) {
+        status.textContent = `Il giocatore ${currentPlayer} ha vinto!`;
+        status.classList.add('winner');
+        gameActive = false;
+      } else if (gameBoard.every(cell => cell !== '')) {
+        // Verifica pareggio
+        status.textContent = 'Pareggio!';
+        gameActive = false;
+      } else {
+        // Cambia il turno
+        currentPlayer = 'O';
+        status.textContent = `Turno del bot ${currentPlayer}`;
+        botMove();
+      }
+    }
+
+    // Funzione per il bot che fa una mossa casuale
+    function botMove() {
+      const availableMoves = getAvailableMoves(gameBoard);
+      const randomIndex = Math.floor(Math.random() * availableMoves.length); // Selezione casuale
+      const move = availableMoves[randomIndex];
+      
+      gameBoard[move] = 'O';
+      document.querySelector(`.cell[data-index='${move}']`).textContent = 'O';
+
+      if (checkWinner()) {
+        status.textContent = `Il bot ha vinto!`;
+        status.classList.add('winner');
+        gameActive = false;
+      } else if (gameBoard.every(cell => cell !== '')) {
+        // Verifica pareggio
+        status.textContent = 'Pareggio!';
+        gameActive = false;
+      } else {
+        // Cambia il turno
+        currentPlayer = 'X';
+        status.textContent = `Turno del giocatore ${currentPlayer}`;
+      }
+    }
+
+    // Funzione per ottenere le mosse disponibili
+    function getAvailableMoves(board) {
+      return board.reduce((acc, val, idx) => {
+        if (val === '') acc.push(idx);
+        return acc;
+      }, []);
+    }
+
+    // Funzione per controllare il vincitore
+    function checkWinner(board = gameBoard) {
+      const winPatterns = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // righe
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // colonne
+        [0, 4, 8], [2, 4, 6]              // diagonali
+      ];
+
+      for (let pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return board[a];
+        }
+      }
+      return null;
+    }
+
+    // Funzione per resettare il gioco
+    resetButton.addEventListener('click', () => {
+      currentPlayer = 'X';
+      gameBoard = ['', '', '', '', '', '', '', '', ''];
+      gameActive = true;
+      status.textContent = `Turno del giocatore X`;
+      status.classList.remove('winner');
+      createBoard();
+    });
+
+    // Inizializza il gioco
+    createBoard();
+  </script>
+
+</body>
+</html>=
